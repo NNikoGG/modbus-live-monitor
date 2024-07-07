@@ -63,3 +63,7 @@ Upon launching, you will be prompted to enter:
 - **Start Address**: The starting address of the Modbus registers to monitor.
 - **Number of Addresses**: How many consecutive addresses to monitor.
 - **Update Interval (ms)**: How often the software updates the displayed values.
+
+## GUI
+
+![image](./screenshots/modbus-live-monitor.png)
