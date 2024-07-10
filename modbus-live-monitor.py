@@ -6,6 +6,7 @@ from PyQt5.QtCore import QTimer, Qt
 from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ModbusIOException
 
+
 class ModbusMonitorGUI(QMainWindow):
     def __init__(self):
         super().__init__()
