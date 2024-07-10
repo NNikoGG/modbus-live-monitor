@@ -1,15 +1,16 @@
 # Modbus Live Monitor
 
-The Modbus Live Monitor is a Python application designed to facilitate real-time monitoring of Modbus devices. This tool is perfect for developers and engineers working with industrial applications that utilize the Modbus protocol. The application connects to Modbus devices over TCP/IP and provides a graphical user interface to display register values dynamically.
+The Modbus Live Monitor is an advanced Python application designed to facilitate real-time monitoring of Modbus devices. This tool is essential for developers and engineers working with industrial applications utilizing the Modbus protocol. It connects to Modbus devices over TCP/IP and provides a dynamic, user-friendly graphical interface to display register values continuously.
 
 ## Features
 
-- **Connection Setup**: Easily configure connection parameters including IP address and port.
-- **Register Configuration**: Specify the start address and the number of Modbus registers to monitor.
-- **Dynamic Monitoring**: Start and stop the monitoring process with a simple click.
-- **Real-Time Data Display**: Values are displayed in a table that updates based on the specified interval.
-- **Status Updates**: View connection status and last update time directly within the GUI.
-- **User-Friendly Interface**: Built using PyQt5, offering a robust and intuitive interface.
+- **Flexible Connection Setup**: Configure IP address and port for Modbus TCP connections.
+- **Register and Data Type Configuration**: Specify the start address, the number of Modbus registers to monitor, and select the type of data (Coils, Discrete Inputs, Input Registers, Holding Registers).
+- **Dynamic Monitoring**: Start and stop the monitoring process with ease using interactive GUI buttons.
+- **Real-Time Data Display**: Values are displayed in a table that updates based on the specified interval, accommodating different data types and ensuring high visibility.
+- **Data Type Specific Addressing**: Adjusts addressing display based on selected data type for clarity and compliance with Modbus standards.
+- **Status Updates**: Provides real-time feedback on connection status and last update time directly within the GUI.
+- **Adjustable Update Interval**: Set and apply different update intervals through the GUI to control the refresh rate of data.
 
 ## Prerequisites
 
