@@ -1,11 +1,10 @@
 import sys
 import time
 import math
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit, QTableWidget, QTableWidgetItem, QScrollArea
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit, QTableWidget, QTableWidgetItem, QScrollArea, QComboBox
 from PyQt5.QtCore import QTimer, Qt
 from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ModbusIOException
-
 
 class ModbusMonitorGUI(QMainWindow):
     def __init__(self):
@@ -43,8 +42,14 @@ class ModbusMonitorGUI(QMainWindow):
         input_layout.addWidget(self.start_addr_input)
 
         input_layout.addWidget(QLabel("Number of Addresses:"))
-        self.num_addr_input = QLineEdit("500")
+        self.num_addr_input = QLineEdit("100")
         input_layout.addWidget(self.num_addr_input)
+
+        # Data type selection
+        input_layout.addWidget(QLabel("Data Type:"))
+        self.data_type_combo = QComboBox()
+        self.data_type_combo.addItems(["Coils", "Discrete Inputs", "Input Registers", "Holding Registers"])
+        input_layout.addWidget(self.data_type_combo)
 
         # Buttons
         button_layout = QHBoxLayout()
@@ -96,6 +101,7 @@ class ModbusMonitorGUI(QMainWindow):
         port = int(self.port_input.text())
         self.start_address = int(self.start_addr_input.text())
         self.num_addresses = int(self.num_addr_input.text())
+        self.data_type = self.data_type_combo.currentText()
 
         self.client = ModbusTcpClient(ip, port=port)
         if self.client.connect():
@@ -136,28 +142,46 @@ class ModbusMonitorGUI(QMainWindow):
         self.start_button.setEnabled(True)
         self.stop_button.setEnabled(False)
 
+    def get_display_address(self, address):
+        if self.data_type == "Coils":
+            return f"{address + 1:05d}"  # Format as 5-digit number with leading zeros
+        elif self.data_type == "Discrete Inputs":
+            return address + 10001
+        elif self.data_type == "Input Registers":
+            return address + 30001
+        else:  # Holding Registers
+            return address + 40001
+
     def update_readings(self):
         if not self.client or not self.client.is_socket_open():
             self.stop_monitoring()
             return
 
         for table_index, table in enumerate(self.tables):
-            start = self.start_address + table_index * 30
-            end = min(start + 30, self.start_address + self.num_addresses)
+            start = self.start_address + table_index * 28
+            end = min(start + 28, self.start_address + self.num_addresses)
             
             for i, address in enumerate(range(start, end)):
                 try:
-                    result = self.client.read_holding_registers(address=address, count=1, unit=1)
-                    if not result.isError():
-                        value = result.registers[0]
-                    else:
-                        value = "Error"
+                    if self.data_type == "Coils":
+                        result = self.client.read_coils(address=address, count=1, unit=1)
+                        value = result.bits[0] if not result.isError() else "Error"
+                    elif self.data_type == "Discrete Inputs":
+                        result = self.client.read_discrete_inputs(address=address, count=1, unit=1)
+                        value = result.bits[0] if not result.isError() else "Error"
+                    elif self.data_type == "Input Registers":
+                        result = self.client.read_input_registers(address=address, count=1, unit=1)
+                        value = result.registers[0] if not result.isError() else "Error"
+                    else:  # Holding Registers
+                        result = self.client.read_holding_registers(address=address, count=1, unit=1)
+                        value = result.registers[0] if not result.isError() else "Error"
                 except ModbusIOException:
                     value = "IO Error"
                 except Exception:
                     value = "Unknown Error"
 
-                table.setItem(i, 0, QTableWidgetItem(str(address)))
+                display_address = self.get_display_address(address)
+                table.setItem(i, 0, QTableWidgetItem(str(display_address)))
                 table.setItem(i, 1, QTableWidgetItem(str(value)))
 
         self.status_label.setText(f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
