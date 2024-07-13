@@ -67,4 +67,8 @@ Upon launching, you will be prompted to enter:
 
 ## GUI
 
-![image](./screenshots/modbus-live-monitor.png)
+![image](./resources/modbus-live-monitor.png)
+
+## License
+
+This project is licensed under the MIT License - see the ![LICENSE](LICENSE) file for details.
