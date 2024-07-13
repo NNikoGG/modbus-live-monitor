@@ -1,26 +1,115 @@
 import sys
 import time
 import math
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit, QTableWidget, QTableWidgetItem, QScrollArea, QComboBox
-from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QLineEdit,
+    QTableWidget,
+    QTableWidgetItem,
+    QScrollArea,
+    QComboBox,
+    QMenuBar,
+    QAction,
+    QDialog,
+    QTextEdit,
+)
+from PyQt5.QtCore import QTimer, Qt, QSize
 from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ModbusIOException
+from PyQt5.QtGui import QIcon, QPixmap, QPainter, QColor, QFont
+
+
+class AboutDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("About Modbus Live Monitor")
+        self.setFixedSize(450, 300)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+
+        layout = QVBoxLayout()
+
+        # Title
+        title_label = QLabel("Modbus Live Monitor")
+        title_label.setAlignment(Qt.AlignCenter)
+        title_label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        layout.addWidget(title_label)
+
+        # Version
+        version_label = QLabel("Version 1.0")
+        version_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(version_label)
+
+        # Credits
+        credits = QTextEdit()
+        credits.setReadOnly(True)
+        credits.setHtml(
+            """
+            <div style="text-align: left;">
+                <p><strong>Contributors:</strong> Nitish Gogoi, Kritanka Baruah, Jyotishman Patowary, Athikho Mao</p>
+                <p><strong>Licensed Under:</strong></p>
+                <p>MIT License</p>
+                <p>Copyright (c) Nitish Gogoi</p>
+            </div>
+            <div style="text-align: left;">
+                <p>Permission is hereby granted, free of charge, to any person obtaining a copy
+                of this software and associated documentation files (the "Software"), to deal
+                in the Software without restriction, including without limitation the rights
+                to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+                copies of the Software, and to permit persons to whom the Software is
+                furnished to do so, subject to the following conditions:</p>
+
+                <p>The above copyright notice and this permission notice shall be included in all
+                copies or substantial portions of the Software.</p>
+
+                <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+                IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+                FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+                AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+                LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+                OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+                SOFTWARE.</p>
+            </div>
+            """
+        )
+        layout.addWidget(credits)
+
+        # Close button
+        close_button = QPushButton("Close")
+        close_button.clicked.connect(self.close)
+        layout.addWidget(close_button)
+
+        self.setLayout(layout)
+
 
 class ModbusMonitorGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Modbus Live Monitor")
         self.setGeometry(100, 100, 1000, 600)
+        self.setWindowIcon(create_icon())
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout(self.central_widget)
-        
+
         self.client = None
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_readings)
         self.tables = []
         self.update_interval = 1000  # Default update interval (1 second)
+
+        self.menubar = self.menuBar()
+        help_menu = self.menubar.addMenu("Help")
+
+        about_action = QAction("About", self)
+        about_action.triggered.connect(self.show_about_dialog)
+        help_menu.addAction(about_action)
 
         self.setup_ui()
 
@@ -48,7 +137,9 @@ class ModbusMonitorGUI(QMainWindow):
         # Data type selection
         input_layout.addWidget(QLabel("Data Type:"))
         self.data_type_combo = QComboBox()
-        self.data_type_combo.addItems(["Coils", "Discrete Inputs", "Input Registers", "Holding Registers"])
+        self.data_type_combo.addItems(
+            ["Coils", "Discrete Inputs", "Input Registers", "Holding Registers"]
+        )
         input_layout.addWidget(self.data_type_combo)
 
         # Buttons
@@ -93,7 +184,7 @@ class ModbusMonitorGUI(QMainWindow):
         table.setHorizontalHeaderLabels(["Address", "Value"])
         table.horizontalHeader().setStretchLastSection(True)
         table.verticalHeader().setVisible(False)
-        table.setMinimumWidth(200)  # Set a minimum width for the table
+        table.setMinimumWidth(200)  
         return table
 
     def start_monitoring(self):
@@ -121,17 +212,19 @@ class ModbusMonitorGUI(QMainWindow):
         self.tables.clear()
 
         # Create new tables
-        addresses_per_table = 28
+        addresses_per_table = 27
         num_tables = math.ceil(self.num_addresses / addresses_per_table)
-        
+
         for i in range(num_tables):
-            rows = min(addresses_per_table, self.num_addresses - i * addresses_per_table)
+            rows = min(
+                addresses_per_table, self.num_addresses - i * addresses_per_table
+            )
             table = self.create_table(rows)
             self.tables.append(table)
             self.scroll_layout.addWidget(table)
 
         # Set the width of the scroll content
-        total_width = num_tables * 200  # Assuming each table is 200px wide
+        total_width = num_tables * 200  
         self.scroll_content.setMinimumWidth(total_width)
 
     def stop_monitoring(self):
@@ -144,7 +237,7 @@ class ModbusMonitorGUI(QMainWindow):
 
     def get_display_address(self, address):
         if self.data_type == "Coils":
-            return f"{address + 1:05d}"  # Format as 5-digit number with leading zeros
+            return f"{address + 1:05d}"
         elif self.data_type == "Discrete Inputs":
             return address + 10001
         elif self.data_type == "Input Registers":
@@ -160,20 +253,28 @@ class ModbusMonitorGUI(QMainWindow):
         for table_index, table in enumerate(self.tables):
             start = self.start_address + table_index * 28
             end = min(start + 28, self.start_address + self.num_addresses)
-            
+
             for i, address in enumerate(range(start, end)):
                 try:
                     if self.data_type == "Coils":
-                        result = self.client.read_coils(address=address, count=1, unit=1)
+                        result = self.client.read_coils(
+                            address=address, count=1, unit=1
+                        )
                         value = result.bits[0] if not result.isError() else "Error"
                     elif self.data_type == "Discrete Inputs":
-                        result = self.client.read_discrete_inputs(address=address, count=1, unit=1)
+                        result = self.client.read_discrete_inputs(
+                            address=address, count=1, unit=1
+                        )
                         value = result.bits[0] if not result.isError() else "Error"
                     elif self.data_type == "Input Registers":
-                        result = self.client.read_input_registers(address=address, count=1, unit=1)
+                        result = self.client.read_input_registers(
+                            address=address, count=1, unit=1
+                        )
                         value = result.registers[0] if not result.isError() else "Error"
                     else:  # Holding Registers
-                        result = self.client.read_holding_registers(address=address, count=1, unit=1)
+                        result = self.client.read_holding_registers(
+                            address=address, count=1, unit=1
+                        )
                         value = result.registers[0] if not result.isError() else "Error"
                 except ModbusIOException:
                     value = "IO Error"
@@ -189,18 +290,41 @@ class ModbusMonitorGUI(QMainWindow):
     def apply_update_interval(self):
         try:
             new_interval = int(self.interval_input.text())
-            if new_interval < 100:  # Minimum interval of 100ms to prevent excessive updates
+            if (
+                new_interval < 100
+            ):  # Minimum interval of 100ms to prevent excessive updates
                 raise ValueError("Interval too small")
             self.update_interval = new_interval
             if self.timer.isActive():
                 self.timer.stop()
                 self.timer.start(self.update_interval)
-            self.status_label.setText(f"Update interval set to {self.update_interval}ms")
+            self.status_label.setText(
+                f"Update interval set to {self.update_interval}ms"
+            )
         except ValueError:
             self.status_label.setText("Invalid interval. Please enter a number >= 100")
 
+    def show_about_dialog(self):
+        about_dialog = AboutDialog(self)
+        about_dialog.exec_() 
+
+def create_icon():
+    pixmap = QPixmap(QSize(64, 64))
+    pixmap.fill(Qt.transparent)
+    painter = QPainter(pixmap)
+    font = QFont()
+    font.setPointSize(20)  
+    font.setBold(True)
+    painter.setFont(font)
+    painter.setPen(QColor(0, 0, 0))
+    painter.drawText(pixmap.rect(), Qt.AlignCenter, "MLM")
+    painter.end()
+    return QIcon(pixmap)
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setWindowIcon(create_icon())
     window = ModbusMonitorGUI()
     window.show()
     sys.exit(app.exec_())
