@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import math
@@ -56,7 +57,7 @@ class AboutDialog(QDialog):
         )
 
         logo1 = QLabel()
-        logo1_pixmap = QPixmap("./resources/oil_logo.jpg")
+        logo1_pixmap = QPixmap(logo1_path)
         logo1_pixmap = logo1_pixmap.scaled(
             100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
@@ -64,7 +65,7 @@ class AboutDialog(QDialog):
         logo_layout.addWidget(logo1)
 
         logo2 = QLabel()
-        logo2_pixmap = QPixmap("./resources/aec_logo.png")
+        logo2_pixmap = QPixmap(logo2_path)
         logo2_pixmap = logo2_pixmap.scaled(
             80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
@@ -345,6 +346,17 @@ def create_icon():
     painter.drawText(pixmap.rect(), Qt.AlignCenter, "MLM")
     painter.end()
     return QIcon(pixmap)
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+logo1_path = resource_path('./resources/oil_logo.jpg')
+logo2_path = resource_path('./resources/aec_logo.png')
 
 
 if __name__ == "__main__":
