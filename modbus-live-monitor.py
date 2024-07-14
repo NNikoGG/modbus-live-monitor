@@ -18,6 +18,8 @@ from PyQt5.QtWidgets import (
     QAction,
     QDialog,
     QTextEdit,
+    QSpacerItem,
+    QSizePolicy,
 )
 from PyQt5.QtCore import QTimer, Qt, QSize
 from pymodbus.client import ModbusTcpClient
@@ -25,14 +27,55 @@ from pymodbus.exceptions import ModbusIOException
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QColor, QFont
 
 
+from PyQt5.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QTextEdit,
+    QPushButton,
+)
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt
+
+
 class AboutDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("About Modbus Live Monitor")
-        self.setFixedSize(450, 300)
+        self.setFixedSize(450, 400)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
 
         layout = QVBoxLayout()
+
+        # Logos
+        logo_layout = QHBoxLayout()
+
+        logo_layout.addItem(
+            QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        )
+
+        logo1 = QLabel()
+        logo1_pixmap = QPixmap("./resources/oil_logo.jpg")
+        logo1_pixmap = logo1_pixmap.scaled(
+            100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        logo1.setPixmap(logo1_pixmap)
+        logo_layout.addWidget(logo1)
+
+        logo2 = QLabel()
+        logo2_pixmap = QPixmap("./resources/aec_logo.png")
+        logo2_pixmap = logo2_pixmap.scaled(
+            80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        logo2.setPixmap(logo2_pixmap)
+        logo_layout.addWidget(logo2)
+
+        logo_layout.addItem(
+            QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        )
+
+        layout.addLayout(logo_layout)
 
         # Title
         title_label = QLabel("Modbus Live Monitor")
@@ -52,28 +95,9 @@ class AboutDialog(QDialog):
             """
             <div style="text-align: left;">
                 <p><strong>Contributors:</strong> Nitish Gogoi, Kritanka Baruah, Jyotishman Patowary, Athikho Mao</p>
-                <p><strong>Licensed Under:</strong></p>
-                <p>MIT License</p>
-                <p>Copyright (c) Nitish Gogoi</p>
-            </div>
-            <div style="text-align: left;">
-                <p>Permission is hereby granted, free of charge, to any person obtaining a copy
-                of this software and associated documentation files (the "Software"), to deal
-                in the Software without restriction, including without limitation the rights
-                to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-                copies of the Software, and to permit persons to whom the Software is
-                furnished to do so, subject to the following conditions:</p>
-
-                <p>The above copyright notice and this permission notice shall be included in all
-                copies or substantial portions of the Software.</p>
-
-                <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-                IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-                FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-                AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-                LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-                OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-                SOFTWARE.</p>
+                <p><strong>Affiliation:</strong> Electronics and Telecommunications Engineering Department, Assam Engineering College</p>
+                <p><strong>Developed for:</strong> Oil India Limited (OIL)</p>
+                <p><strong>Project:</strong> This software is a collaborative effort between Assam Engineering College and Oil India Limited.</p>
             </div>
             """
         )
@@ -184,7 +208,7 @@ class ModbusMonitorGUI(QMainWindow):
         table.setHorizontalHeaderLabels(["Address", "Value"])
         table.horizontalHeader().setStretchLastSection(True)
         table.verticalHeader().setVisible(False)
-        table.setMinimumWidth(200)  
+        table.setMinimumWidth(200)
         return table
 
     def start_monitoring(self):
@@ -224,7 +248,7 @@ class ModbusMonitorGUI(QMainWindow):
             self.scroll_layout.addWidget(table)
 
         # Set the width of the scroll content
-        total_width = num_tables * 200  
+        total_width = num_tables * 200
         self.scroll_content.setMinimumWidth(total_width)
 
     def stop_monitoring(self):
@@ -306,14 +330,15 @@ class ModbusMonitorGUI(QMainWindow):
 
     def show_about_dialog(self):
         about_dialog = AboutDialog(self)
-        about_dialog.exec_() 
+        about_dialog.exec_()
+
 
 def create_icon():
     pixmap = QPixmap(QSize(64, 64))
     pixmap.fill(Qt.transparent)
     painter = QPainter(pixmap)
     font = QFont()
-    font.setPointSize(20)  
+    font.setPointSize(20)
     font.setBold(True)
     painter.setFont(font)
     painter.setPen(QColor(0, 0, 0))
