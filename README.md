@@ -71,4 +71,4 @@ Upon launching, you will be prompted to enter:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. The logos of Oil India Limited and Assam Engineering College are trademarks of their respective owners and are used with permission.
